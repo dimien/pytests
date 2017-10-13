@@ -6,21 +6,35 @@ import json
 import datetime
 import random
 import re
-from multiprocessing import Process
+from multiprocessing.dummy import Pool as ThreadPool
+
+
+BASE_URL = "https://staging.modnakasta.ua"
+CAMPAIGNS_API_URL = "/api/v2/campaigns"
+PRODUCT_API_URL = "/api/v2/product/?"
+PRODUCT_LIST_API_URL = "/api/v2/product-list"
+IMG_URL = "https://m.cdnmk.net/imgw/loc/1x1/"
+
+PRODUCT_URL = BASE_URL + "/product/4254712:671/?campaign=s-43262-ezhednevnyj-uhod"
+PRODUCT_WIHOUT_CAMPAIGN_URL = BASE_URL + "/product/340938:671/"
+CAMPAIGN_URL = BASE_URL + "/campaign/s-43273-colin-s/"
+MARKET_URL = BASE_URL + "/market/tovary-dlya-kuhni/"
+
+MAIN_URLS = [BASE_URL, CAMPAIGN_URL, PRODUCT_URL, MARKET_URL, PRODUCT_WIHOUT_CAMPAIGN_URL]
 
 
 def read_url(url):
-    data = urllib2.urlopen(url)
-    return data
-
-def get_campaigns():
-    url = BASE_URL + CAMPAIGNS_URL
-    res = read_url(url)
-    r = json.loads(res.read())
+    res = urllib2.urlopen(url)
     try:
         assert(res.getcode() == 200)
     except:
-        raise Exception, "%s returns %s" % (res.read(), res.getcode())
+        raise Exception, "%s returns %s" % (url ,res.getcode())
+    return res
+
+def get_campaigns():
+    url = BASE_URL + CAMPAIGNS_API_URL
+    res = read_url(url)
+    r = json.loads(res.read())
     return r
 
 def get_current_campaigns_ids():
@@ -36,11 +50,8 @@ def get_current_campaigns_ids():
     return ids
 
 def get_product_lst_by_campaign_id(campaign_id):
-    url = BASE_URL + PRODUCT_LIST_URL + '/%s' % campaign_id
-    try:
-        res = read_url(url)
-    except:
-        raise Exception, "%s returns %s" (url, res.getcode())
+    url = BASE_URL + PRODUCT_LIST_API_URL + '/%s' % campaign_id
+    res = read_url(url)
     r = json.loads(res.read())
     return r
 
@@ -56,7 +67,7 @@ def create_product_lst():
 def get_products_img_lst():
     lst = create_product_lst()
     img_lst = []
-    url = BASE_URL + PRODUCT_URL
+    url = BASE_URL + PRODUCT_API_URL
     for p in lst:
         pp_id = re.search("\d*", p).group(0)
         url += "pp-id=%s&" % pp_id
@@ -66,31 +77,32 @@ def get_products_img_lst():
 
     for product in r["items"]:
         img_lst.extend(product["images"])
-    try:
-        assert(res.getcode() == 200)
-    except:
-        raise Exception, "%s returns %s" % (res.read(), res.getcode())
     return img_lst
 
 def get_img(img):
     url = IMG_URL + str(img)
     res = read_url(url)
-    try:
-        assert(res.getcode() == 200)
-    except:
-        raise Exception, "%s returns %s" % (url ,res.getcode())
+
+def get_main_urls(url):
+    res = read_url(url)
+
 
 class TestMonitor(unittest.TestCase):
     def test_threads(self):
-        NUMBER_OF_PROCESSES = 2
-        p = Process()
         img_lst = get_products_img_lst()
-        for n in xrange(NUMBER_OF_PROCESSES):
-            for img in img_lst:
-                p = Process(target=get_img, args=(img, ))
-        p.start()
-        p.join()
-        print 'Done!'
 
+        # check photos availability
+        pool1 = ThreadPool(100)
+        pool1.map(get_img, img_lst)
+        pool1.close()
+        pool1.join()
+
+        # check main urls availability
+        pool2 = ThreadPool(100)
+        pool2.map(read_url, MAIN_URLS)
+        pool2.close()
+        pool2.join()
+
+        print 'MK is alive.'
 if __name__ == '__main__':
     unittest.main()
