@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import pytest
 import urllib2
 import unittest
 import json
@@ -9,7 +10,7 @@ import re
 from multiprocessing.dummy import Pool as ThreadPool
 
 
-BASE_URL = "https://staging.modnakasta.ua"
+BASE_URL = "https://modnakasta.ua"
 CAMPAIGNS_API_URL = "/api/v2/campaigns"
 PRODUCT_API_URL = "/api/v2/product/?"
 PRODUCT_LIST_API_URL = "/api/v2/product-list"
