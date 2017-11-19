@@ -1,1 +1,1 @@
-This is example of test using python + unittest + webdriver
+This is example of tests using python + unittest + webdriver
