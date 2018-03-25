@@ -8,11 +8,10 @@ Python + Unittest + Selenium WebDriver + Chromedriver
 3. python get-pip.py
 4. pip install selenium
 5. [download chromedriver](https://chromedriver.storage.googleapis.com/2.35/chromedriver_win32.zip)
-6. [add chromedrive into syspath](https://developers.thomsonreuters.com/sites/default/files/How%20To%20Add%20ChromeDriver%20To%20System%20Variables_0.pdf) and copy the same path into ..unittests\\base\config.py
+6. [add chromedrive into syspath](https://developers.thomsonreuters.com/sites/default/files/How%20To%20Add%20ChromeDriver%20To%20System%20Variables_0.pdf) and copy the same path into ..unittests\base\config.py
 7. open terminal as admin
-8. open python
 ```
+python
 from selenium import webdriver
 webdriver.Chrome(r"path to chromedriver").get('https://google.com')
 ```
-
